@@ -1,0 +1,5 @@
+@host = http://localhost:5000
+
+### OpenAPI document (Development only)
+GET {{host}}/openapi/v1.json
+Accept: application/json

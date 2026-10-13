@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Companies.Application\Companies.Application.csproj" />
+    <ProjectReference Include="..\Companies.Infrastructure\Companies.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Companies.Api.IntegrationTests" />
+  </ItemGroup>
+
+</Project>
