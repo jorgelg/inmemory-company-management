@@ -18,7 +18,7 @@ How code in this repository is written. The build enforces what it can (analyzer
 
 ## 2. C# style
 
-- **File layout**: one public type per file, named after the type. File-scoped namespaces that match the folder path (`Companies.Domain.Companies`). `using` directives sit outside the namespace, `System` first.
+- **File layout**: one public type per file, named after the type. Small internal companions used only by that type (its `[LoggerMessage]` class, a private result record, a sort enum) may share its file. File-scoped namespaces that match the folder path (`Companies.Domain.Companies`). `using` directives sit outside the namespace, `System` first.
 - **Naming**: `PascalCase` for types, members and constants; `_camelCase` for private fields; `camelCase` for locals and parameters; `I` prefix for interfaces; `Async` suffix on async methods.
 - **Types**: `sealed` by default. Use records for value objects and DTOs, and classes for entities and services. Use primary constructors for services that only capture dependencies.
 - **Immutability**: get-only or `init` properties; no public setters on domain types. Expose collections as `IReadOnlyList<T>`/`IReadOnlyCollection<T>`.
