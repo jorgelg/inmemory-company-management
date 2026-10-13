@@ -1,0 +1,7 @@
+T:NUnit.Framework.Assert;Use Shouldly (value.ShouldBe(...), Should.Throw<T>(...)) instead of NUnit assertions
+T:NUnit.Framework.Assume;Use Shouldly instead of NUnit assumptions
+T:NUnit.Framework.Legacy.ClassicAssert;Use Shouldly instead of NUnit classic assertions
+T:NUnit.Framework.Legacy.StringAssert;Use Shouldly instead of NUnit classic assertions
+T:NUnit.Framework.Legacy.CollectionAssert;Use Shouldly instead of NUnit classic assertions
+T:NUnit.Framework.Legacy.FileAssert;Use Shouldly instead of NUnit classic assertions
+T:NUnit.Framework.Legacy.DirectoryAssert;Use Shouldly instead of NUnit classic assertions

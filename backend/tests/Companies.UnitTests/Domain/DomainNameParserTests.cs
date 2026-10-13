@@ -16,24 +16,20 @@ public sealed class DomainNameParserTests
     public void TryParse_ValidHost_ExtractsRegistrableDomain(
         string host, string registrable, string label, string suffix)
     {
-        var parsed = DomainNameParser.TryParse(host, out var parts);
+        DomainNameParser.TryParse(host, out var parts).ShouldBeTrue();
 
-        Assert.That(parsed, Is.True);
-        Assert.Multiple(() =>
-        {
-            Assert.That(parts!.RegistrableDomain, Is.EqualTo(registrable));
-            Assert.That(parts.Label, Is.EqualTo(label));
-            Assert.That(parts.PublicSuffix, Is.EqualTo(suffix));
-        });
+        parts.ShouldNotBeNull().ShouldSatisfyAllConditions(
+            p => p.RegistrableDomain.ShouldBe(registrable),
+            p => p.Label.ShouldBe(label),
+            p => p.PublicSuffix.ShouldBe(suffix));
     }
 
     [Test]
     public void TryParse_KeepsNormalizedHost()
     {
-        var parsed = DomainNameParser.TryParse("WWW.Acme.co.uk.", out var parts);
+        DomainNameParser.TryParse("WWW.Acme.co.uk.", out var parts).ShouldBeTrue();
 
-        Assert.That(parsed, Is.True);
-        Assert.That(parts!.Host, Is.EqualTo("www.acme.co.uk"));
+        parts.ShouldNotBeNull().Host.ShouldBe("www.acme.co.uk");
     }
 
     [TestCase("")]
@@ -44,12 +40,8 @@ public sealed class DomainNameParserTests
     [TestCase(".example.com")]
     public void TryParse_InvalidHost_ReturnsFalse(string host)
     {
-        var parsed = DomainNameParser.TryParse(host, out var parts);
+        DomainNameParser.TryParse(host, out var parts).ShouldBeFalse();
 
-        Assert.Multiple(() =>
-        {
-            Assert.That(parsed, Is.False);
-            Assert.That(parts, Is.Null);
-        });
+        parts.ShouldBeNull();
     }
 }

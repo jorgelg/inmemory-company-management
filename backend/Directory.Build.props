@@ -17,4 +17,10 @@
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
 
+  <!-- Tests assert with Shouldly only; NUnit's assertion APIs are banned (see tests/BannedSymbols.txt). -->
+  <ItemGroup Condition="$(MSBuildProjectName.EndsWith('Tests'))">
+    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" PrivateAssets="all" />
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)tests/BannedSymbols.txt" Link="BannedSymbols.txt" />
+  </ItemGroup>
+
 </Project>

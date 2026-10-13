@@ -21,6 +21,6 @@ public sealed class ApiSmokeTests
 
         using var response = await client.GetAsync(new Uri("/openapi/v1.json", UriKind.Relative));
 
-        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
 }

@@ -16,14 +16,12 @@ public sealed class CompanyTests
     {
         var company = Company.Create(Name, Website, new FakeTimeProvider(Now));
 
-        Assert.Multiple(() =>
-        {
-            Assert.That(company.Id, Is.Not.EqualTo(Guid.Empty));
-            Assert.That(company.Id.Version, Is.EqualTo(7));
-            Assert.That(company.Name, Is.EqualTo(Name));
-            Assert.That(company.Website, Is.EqualTo(Website));
-            Assert.That(company.CreatedAt, Is.EqualTo(Now));
-        });
+        company.ShouldSatisfyAllConditions(
+            c => c.Id.ShouldNotBe(Guid.Empty),
+            c => c.Id.Version.ShouldBe(7),
+            c => c.Name.ShouldBe(Name),
+            c => c.Website.ShouldBe(Website),
+            c => c.CreatedAt.ShouldBe(Now));
     }
 
     [Test]
@@ -34,7 +32,7 @@ public sealed class CompanyTests
         var first = Company.Create(Name, Website, clock);
         var second = Company.Create(Name, Website, clock);
 
-        Assert.That(first.Id, Is.Not.EqualTo(second.Id));
+        first.Id.ShouldNotBe(second.Id);
     }
 
     [Test]
@@ -44,16 +42,14 @@ public sealed class CompanyTests
 
         var company = Company.Restore(id, Name, Website, Now);
 
-        Assert.Multiple(() =>
-        {
-            Assert.That(company.Id, Is.EqualTo(id));
-            Assert.That(company.CreatedAt, Is.EqualTo(Now));
-        });
+        company.ShouldSatisfyAllConditions(
+            c => c.Id.ShouldBe(id),
+            c => c.CreatedAt.ShouldBe(Now));
     }
 
     [Test]
     public void Restore_WithEmptyId_Throws()
     {
-        Assert.That(() => Company.Restore(Guid.Empty, Name, Website, Now), Throws.ArgumentException);
+        Should.Throw<ArgumentException>(() => Company.Restore(Guid.Empty, Name, Website, Now));
     }
 }

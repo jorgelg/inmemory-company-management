@@ -1,4 +1,5 @@
 using Companies.Domain.Common;
+using Companies.UnitTests.Support;
 
 namespace Companies.UnitTests.Domain;
 
@@ -10,11 +11,9 @@ public sealed class ResultTests
     {
         Result<int> result = 42;
 
-        Assert.Multiple(() =>
-        {
-            Assert.That(result.IsSuccess, Is.True);
-            Assert.That(result.Value, Is.EqualTo(42));
-        });
+        result.ShouldSatisfyAllConditions(
+            () => result.IsSuccess.ShouldBeTrue(),
+            () => result.Value.ShouldBe(42));
     }
 
     [Test]
@@ -24,12 +23,7 @@ public sealed class ResultTests
 
         Result<int> result = error;
 
-        Assert.Multiple(() =>
-        {
-            Assert.That(result.IsSuccess, Is.False);
-            Assert.That(result.Error, Is.EqualTo(error));
-            Assert.That(result.Error.Type, Is.EqualTo(ErrorType.Validation));
-        });
+        result.ShouldBeFailure().ShouldBe(error);
     }
 
     [Test]
@@ -37,7 +31,7 @@ public sealed class ResultTests
     {
         Result<int> result = Error.NotFound("company.not_found", "Company was not found.");
 
-        Assert.That(() => result.Value, Throws.InvalidOperationException);
+        Should.Throw<InvalidOperationException>(() => result.Value);
     }
 
     [Test]
@@ -45,6 +39,16 @@ public sealed class ResultTests
     {
         Result<int> result = 1;
 
-        Assert.That(() => result.Error, Throws.InvalidOperationException);
+        Should.Throw<InvalidOperationException>(() => result.Error);
+    }
+
+    [Test]
+    public void Match_InvokesBranchForOutcome()
+    {
+        Result<int> success = 2;
+        Result<int> failure = Error.Conflict("company.duplicate", "Already exists.");
+
+        success.Match(v => $"ok:{v}", e => e.Code).ShouldBe("ok:2");
+        failure.Match(v => $"ok:{v}", e => e.Code).ShouldBe("company.duplicate");
     }
 }

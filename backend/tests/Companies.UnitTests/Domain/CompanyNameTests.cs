@@ -1,5 +1,5 @@
-using Companies.Domain.Common;
 using Companies.Domain.Companies;
+using Companies.UnitTests.Support;
 
 namespace Companies.UnitTests.Domain;
 
@@ -12,10 +12,7 @@ public sealed class CompanyNameTests
     [TestCase("IBM", "IBM")]
     public void Create_WithValidName_NormalizesWhitespace(string input, string expected)
     {
-        var result = CompanyName.Create(input);
-
-        Assert.That(result.IsSuccess, Is.True);
-        Assert.That(result.Value.Value, Is.EqualTo(expected));
+        CompanyName.Create(input).ShouldBeSuccess().Value.ShouldBe(expected);
     }
 
     [TestCase(null)]
@@ -23,14 +20,14 @@ public sealed class CompanyNameTests
     [TestCase("   ")]
     public void Create_WithMissingName_FailsAsRequired(string? input)
     {
-        AssertValidationError(CompanyName.Create(input), "company_name.required");
+        CompanyName.Create(input).ShouldBeValidationError("company_name.required", "name");
     }
 
     [TestCase("A")]
     [TestCase(" AB ")]
     public void Create_WithTooShortName_Fails(string input)
     {
-        AssertValidationError(CompanyName.Create(input), "company_name.too_short");
+        CompanyName.Create(input).ShouldBeValidationError("company_name.too_short", "name");
     }
 
     [Test]
@@ -38,39 +35,25 @@ public sealed class CompanyNameTests
     {
         var input = new string('a', CompanyName.MaxLength + 1);
 
-        AssertValidationError(CompanyName.Create(input), "company_name.too_long");
+        CompanyName.Create(input).ShouldBeValidationError("company_name.too_long", "name");
     }
 
     [Test]
     public void Create_AtMaxLength_Succeeds()
     {
-        var result = CompanyName.Create(new string('a', CompanyName.MaxLength));
-
-        Assert.That(result.IsSuccess, Is.True);
+        CompanyName.Create(new string('a', CompanyName.MaxLength)).ShouldBeSuccess();
     }
 
     [TestCase("!!!")]
     [TestCase("- - -")]
     public void Create_WithoutLettersOrDigits_Fails(string input)
     {
-        AssertValidationError(CompanyName.Create(input), "company_name.no_alphanumeric");
+        CompanyName.Create(input).ShouldBeValidationError("company_name.no_alphanumeric", "name");
     }
 
     [Test]
     public void Equality_IsByValue()
     {
-        Assert.That(CompanyName.Create("Acme").Value, Is.EqualTo(CompanyName.Create(" Acme ").Value));
-    }
-
-    private static void AssertValidationError(Result<CompanyName> result, string code)
-    {
-        Assert.That(result.IsSuccess, Is.False);
-        Assert.Multiple(() =>
-        {
-            Assert.That(result.Error.Type, Is.EqualTo(ErrorType.Validation));
-            Assert.That(result.Error.Code, Is.EqualTo(code));
-            Assert.That(result.Error.Target, Is.EqualTo("name"));
-            Assert.That(result.Error.Message, Is.Not.Empty);
-        });
+        CompanyName.Create("Acme").Value.ShouldBe(CompanyName.Create(" Acme ").Value);
     }
 }
