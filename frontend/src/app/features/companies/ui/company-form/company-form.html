@@ -1,0 +1,57 @@
+<form class="card" [formRoot]="companyForm" aria-labelledby="add-company-title">
+  <h2 id="add-company-title">Add a company</h2>
+
+  <div class="field">
+    <label for="company-name">Company name</label>
+    <input
+      id="company-name"
+      type="text"
+      autocomplete="organization"
+      placeholder="Verus LLC"
+      [formField]="companyForm.name"
+      [attr.aria-invalid]="companyForm.name().touched() && companyForm.name().invalid()"
+      aria-describedby="company-name-errors"
+    />
+    <div id="company-name-errors" data-testid="name-errors">
+      @if (companyForm.name().touched()) {
+        @for (error of companyForm.name().errors(); track $index) {
+          <p class="field-error">{{ error.message }}</p>
+        }
+      }
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="company-website">Website URL</label>
+    <input
+      id="company-website"
+      type="url"
+      autocomplete="url"
+      placeholder="https://www.verus.com"
+      [formField]="companyForm.website"
+      [attr.aria-invalid]="companyForm.website().touched() && companyForm.website().invalid()"
+      aria-describedby="company-website-errors"
+    />
+    <div id="company-website-errors" data-testid="website-errors">
+      @if (companyForm.website().touched()) {
+        @for (error of companyForm.website().errors(); track $index) {
+          <p class="field-error">{{ error.message }}</p>
+        }
+      }
+    </div>
+  </div>
+
+  @for (error of companyForm().errors(); track $index) {
+    <p class="banner banner-error" role="alert" data-testid="form-error">{{ error.message }}</p>
+  }
+
+  @if (created(); as company) {
+    <p class="banner banner-success" role="status" data-testid="form-success">
+      Added <strong>{{ company.name }}</strong> ({{ company.domain }}).
+    </p>
+  }
+
+  <button type="submit" [disabled]="companyForm().submitting()">
+    {{ companyForm().submitting() ? 'Checking…' : 'Add company' }}
+  </button>
+</form>

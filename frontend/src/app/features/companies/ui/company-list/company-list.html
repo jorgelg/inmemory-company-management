@@ -1,0 +1,71 @@
+@if (companies().length > 0) {
+  <div class="table-scroll">
+    <table [attr.aria-busy]="loading()">
+      <thead>
+        <tr>
+          <th scope="col">Name</th>
+          <th scope="col">Website</th>
+          <th scope="col">Domain</th>
+          <th scope="col">Added</th>
+          @if (showRelevance()) {
+            <th scope="col">Relevance</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (company of companies(); track company.id) {
+          <tr data-testid="company-row">
+            <td>{{ company.name }}</td>
+            <td>
+              <a [href]="company.website" target="_blank" rel="noopener noreferrer">{{
+                company.website
+              }}</a>
+            </td>
+            <td>{{ company.domain }}</td>
+            <td>
+              <time [attr.datetime]="company.createdAt">{{
+                company.createdAt | date: 'medium'
+              }}</time>
+            </td>
+            @if (showRelevance()) {
+              <td>{{ company.relevanceScore | percent }}</td>
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (page(); as current) {
+    <nav class="pager" aria-label="Pagination">
+      <button
+        type="button"
+        class="secondary"
+        [disabled]="current.page <= 1"
+        (click)="pageChange.emit(current.page - 1)"
+      >
+        Previous
+      </button>
+      <span data-testid="page-info">
+        Page {{ current.page }} of {{ current.totalPages }} · {{ current.totalCount }}
+        {{ current.totalCount === 1 ? 'company' : 'companies' }}
+      </span>
+      <button
+        type="button"
+        class="secondary"
+        [disabled]="current.page >= current.totalPages"
+        (click)="pageChange.emit(current.page + 1)"
+      >
+        Next
+      </button>
+    </nav>
+  }
+} @else if (loading()) {
+  <p class="muted">Loading companies…</p>
+} @else {
+  <p class="muted" data-testid="empty-state">
+    {{
+      filtered() ? 'No companies match your search.' : 'No companies yet. Add the first one above.'
+    }}
+  </p>
+}

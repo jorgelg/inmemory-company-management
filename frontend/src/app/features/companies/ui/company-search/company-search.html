@@ -1,0 +1,37 @@
+<form class="search" [formRoot]="searchForm" role="search" aria-label="Search companies">
+  <div class="field">
+    <label for="search-q">Search</label>
+    <input
+      id="search-q"
+      type="search"
+      placeholder="Relevance search, e.g. verus"
+      [formField]="searchForm.q"
+    />
+  </div>
+
+  <div class="field">
+    <label for="search-name">Name contains</label>
+    <input id="search-name" type="text" [formField]="searchForm.name" />
+  </div>
+
+  <div class="field">
+    <label for="search-domain">Domain</label>
+    <input id="search-domain" type="text" placeholder="verus.com" [formField]="searchForm.domain" />
+  </div>
+
+  <div class="field">
+    <label for="search-sort">Sort by</label>
+    <select id="search-sort" [formField]="searchForm.sort">
+      <option value="">{{ canSortByRelevance() ? 'Relevance' : 'Name (A–Z)' }}</option>
+      <option value="name">Name (A–Z)</option>
+      <option value="-name">Name (Z–A)</option>
+      <option value="-createdAt">Newest first</option>
+      <option value="createdAt">Oldest first</option>
+    </select>
+  </div>
+
+  <div class="actions">
+    <button type="submit">Search</button>
+    <button type="button" class="secondary" (click)="clear()">Clear</button>
+  </div>
+</form>

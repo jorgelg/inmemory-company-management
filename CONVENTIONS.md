@@ -81,11 +81,16 @@ How code in this repository is written. The build enforces what it can (analyzer
 
 ## 7. Frontend (Angular)
 
-- Standalone components, signals for state, `OnPush`-equivalent behaviour (zoneless). Use the new control flow (`@if`, `@for`) and `inject()` for DI.
-- Feature folders: `features/<feature>/{data-access,ui}` plus a page component; cross-cutting code goes in `core/`.
-- HTTP calls only in `data-access` services, which return typed models that mirror the API DTOs. Components never call `HttpClient` directly.
-- Server ProblemDetails are parsed once (`core/http`) and shown as field errors or a banner. Client validators mirror the server rules but the server stays the source of truth.
-- Minimal styling: plain CSS, no UI library.
+- **Angular 22**: standalone components, zoneless, signals for state, built-in control flow (`@if`, `@for`), `inject()` for DI, `input()`/`output()`. Node >= 24.15 (see `package.json` `engines`).
+- **2025 file naming** (the CLI default): no type suffixes. `company-form.ts` exports `CompanyForm`; `company-api.ts` exports `CompanyApi`. Specs sit next to their file as `*.spec.ts`.
+- **Structure**: `features/<feature>/{data-access,ui}` plus a page component that composes them; cross-cutting code lives in `core/`; test helpers live in `src/testing/`.
+- **Data access**: only `data-access/*-api.ts` knows URLs and uses `HttpClient`. Lists load through `httpResource` in a feature store (`@Injectable()`, provided by the page) and reload when the query signal changes. Models mirror the API DTOs.
+- **Forms**: Signal Forms (`form`, `schema`, `[formField]`, `<form [formRoot]>`, `submission.action`). Client validators mirror the server rules, but the server is the source of truth. The submit action maps ProblemDetails `errors` onto fields and everything else to a form-level error (`core/http/api-problem.ts`).
+- **UI components** are presentational where practical (inputs/outputs). Only the form talks to the store.
+- **Never name an `output()` after a native DOM event** (`search`, `change`, `input`, `submit`, `click`, `select`...). The browser event bubbles to the host and fires the same template listener with an `Event` payload. Found the hard way: `<input type="search">` fires `search` on Enter.
+- **Accessibility**: labels tied to inputs, `aria-invalid` and `aria-describedby` on fields, `role="alert"`/`role="status"` for banners, `aria-busy` while loading.
+- **Styling**: plain CSS with tokens in `styles.css`, no UI library. No horizontal page scroll at phone width; wide tables scroll inside `.table-scroll`.
+- **Tests** (Vitest via `ng test`): `HttpTestingController` instead of mocking services, so component tests exercise the real store and API client. Use `tick()` from `src/testing/companies.ts` while a request is pending, because `fixture.whenStable()` waits for in-flight `httpResource` requests and would hang. Query the DOM by `id` / `data-testid`. Format with Prettier (`.prettierrc`).
 
 ## 8. Git
 
