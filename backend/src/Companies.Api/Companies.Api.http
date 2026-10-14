@@ -1,5 +1,79 @@
 @host = http://localhost:5000
 
+### Create a company (201 + Location)
+POST {{host}}/api/companies
+Content-Type: application/json
+
+{
+  "name": "Verus LLC",
+  "website": "https://www.verus.com"
+}
+
+### Acronym match (201)
+POST {{host}}/api/companies
+Content-Type: application/json
+
+{
+  "name": "International Business Machines",
+  "website": "https://www.ibm.com"
+}
+
+### Domain doesn't match; accepted via the home page title (201, needs network)
+POST {{host}}/api/companies
+Content-Type: application/json
+
+{
+  "name": "Hacker News",
+  "website": "https://news.ycombinator.com"
+}
+
+### Name not relevant to the website (400, company.not_relevant)
+POST {{host}}/api/companies
+Content-Type: application/json
+
+{
+  "name": "Acme",
+  "website": "https://www.example.com"
+}
+
+### Field validation (400, errors.name + errors.website)
+POST {{host}}/api/companies
+Content-Type: application/json
+
+{
+  "name": "A",
+  "website": "not a url"
+}
+
+### Same registrable domain again (409, company.duplicate_website)
+POST {{host}}/api/companies
+Content-Type: application/json
+
+{
+  "name": "Verus",
+  "website": "https://shop.verus.com"
+}
+
+### List all (200, sorted by name)
+GET {{host}}/api/companies
+
+### Relevance search (200, ordered by relevanceScore)
+GET {{host}}/api/companies?q=verus
+
+### Filter by name fragment and by domain
+GET {{host}}/api/companies?name=verus&domain=verus.com
+
+### Sort and page
+GET {{host}}/api/companies?sort=-createdAt&page=1&pageSize=10
+
+### Empty result is still 200
+GET {{host}}/api/companies?name=nothing-matches
+
+### Invalid query (400, query.invalid_page_size)
+GET {{host}}/api/companies?pageSize=500
+
+### Unknown id (404, company.not_found)
+GET {{host}}/api/companies/00000000-0000-7000-8000-000000000000
+
 ### OpenAPI document (Development only)
 GET {{host}}/openapi/v1.json
-Accept: application/json

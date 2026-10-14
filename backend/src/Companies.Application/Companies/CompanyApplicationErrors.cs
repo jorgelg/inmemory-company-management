@@ -33,9 +33,12 @@ public static class CompanyApplicationErrors
         ArgumentNullException.ThrowIfNull(website);
         ArgumentNullException.ThrowIfNull(verdict);
 
+        // Every strategy that ran is cited, so "the website could not be read" is visible, not just the best score.
+        var reasons = string.Join("; ", verdict.Evidence.Select(evidence => evidence.Reason));
+
         return Error.Validation("company.not_relevant", string.Create(CultureInfo.InvariantCulture,
             $"Company name '{name}' does not appear to be related to website '{website.RegistrableDomain}': " +
-            $"{verdict.Best.Reason} (score {verdict.Best.Score:0.00}, threshold {verdict.Threshold:0.00})."));
+            $"{reasons} (best score {verdict.Best.Score:0.00}, threshold {verdict.Threshold:0.00})."));
     }
 
     public static Error FilterTooLong(string parameter) => Error.Validation(

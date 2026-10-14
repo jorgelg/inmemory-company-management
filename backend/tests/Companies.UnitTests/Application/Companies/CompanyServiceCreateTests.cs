@@ -126,6 +126,22 @@ public sealed class CompanyServiceCreateTests
     }
 
     [Test]
+    public async Task Create_NotRelevant_ExplainsEveryStrategyThatRan()
+    {
+        RelevanceEvidence domain = new("domain-match", 0.0, "domain label 'abc' does not resemble the name");
+        RelevanceEvidence content = new("content-inspection", 0.0, "website content could not be retrieved");
+        _relevance.EvaluateAsync(Arg.Any<CompanyName>(), Arg.Any<WebsiteUrl>(), Arg.Any<CancellationToken>())
+            .Returns(new RelevanceVerdict(false, 0.6, domain, [domain, content]));
+
+        var result = await _service.CreateAsync(Request("Alphabet Inc.", "https://abc.xyz"), CancellationToken.None);
+
+        result.ShouldBeFailure().Message.ShouldBe(
+            "Company name 'Alphabet Inc.' does not appear to be related to website 'abc.xyz': " +
+            "domain label 'abc' does not resemble the name; website content could not be retrieved " +
+            "(best score 0.00, threshold 0.60).");
+    }
+
+    [Test]
     public async Task Create_WhenDomainTakenConcurrently_FailsWithConflict()
     {
         _repository.TryAddAsync(Arg.Any<Company>(), Arg.Any<CancellationToken>()).Returns(false);
