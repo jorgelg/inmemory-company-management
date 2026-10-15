@@ -2,8 +2,8 @@
 
 A Web API (ASP.NET Core, .NET 10) and an Angular 22 frontend for registering companies. Each submission is validated, including a check that the **company name is relevant to its website URL**. Valid companies are stored in memory and can be listed, filtered, searched by relevance and fetched by id.
 
-- **Backend**: Clean Architecture (Domain / Application / Infrastructure / Api), RFC 9457 ProblemDetails, structured logging, 313 NUnit tests.
-- **Frontend**: standalone, zoneless Angular with signals, Signal Forms and `httpResource`, 33 Vitest tests.
+- **Backend**: Clean Architecture (Domain / Application / Infrastructure / Api), RFC 9457 ProblemDetails, structured logging, 316 NUnit tests.
+- **Frontend**: standalone, zoneless Angular with signals, Signal Forms and `httpResource`, 35 Vitest tests.
 - **Design docs**: [architecture](docs/architecture.md) · [ADR 001 API design](docs/decisions/001-api-design.md) · [ADR 002 relevance strategy](docs/decisions/002-relevance-strategy.md) · [ADR 003 persistence](docs/decisions/003-persistence.md) · [coding conventions](CONVENTIONS.md)
 
 ## Prerequisites
@@ -35,16 +35,16 @@ npm start
 
 Open http://localhost:4200, add a company (try `Verus LLC` + `https://www.verus.com`), then search for it. Start the backend first: the frontend reaches it through the dev-server proxy (`frontend/proxy.conf.json`).
 
-The OpenAPI document is at http://localhost:5000/openapi/v1.json in Development. [`backend/src/Companies.Api/Companies.Api.http`](backend/src/Companies.Api/Companies.Api.http) has a ready-made request for every scenario (VS Code REST Client / Rider / Visual Studio).
+In Development, `dotnet run` opens the interactive **Scalar** API reference at http://localhost:5000/scalar/v1 (try any endpoint from the browser). The raw OpenAPI document is at http://localhost:5000/openapi/v1.json. Both are disabled outside Development. [`backend/src/Companies.Api/Companies.Api.http`](backend/src/Companies.Api/Companies.Api.http) has a ready-made request for every scenario (VS Code REST Client / Rider / Visual Studio).
 
 ## Test it
 
 ```bash
 cd backend
-dotnet test                 # 265 unit + 48 integration tests
+dotnet test                 # 265 unit + 51 integration tests
 
 cd ../frontend
-npm run test:ci             # 33 Vitest tests (npm test = watch mode)
+npm run test:ci             # 35 Vitest tests (npm test = watch mode)
 ```
 
 The backend tests never touch the network: the website content fetcher is substituted. The integration tests host the real API in memory (`WebApplicationFactory`) with DI validation on, so each run also checks the composition root.
@@ -139,6 +139,7 @@ docs/                            architecture and decision records
 
 ## Known limitations
 
+- **No rate limiting yet (flagged improvement).** A `POST` whose domain doesn't match can trigger an outbound fetch of the submitted website. The SSRF guard keeps internal targets unreachable, but nothing throttles how often a client can make the API fetch third-party sites. Next step: ASP.NET Core's built-in rate limiter (`AddRateLimiter`, a fixed window per client on `POST /api/companies`) returning a 429 problem response, plus caching content-inspection results per registrable domain.
 - **Storage is in memory.** Data is lost on restart, by design (the spec says no database). [ADR 003](docs/decisions/003-persistence.md) covers the path to a real database.
 - **Sites behind bot protection can't be inspected.** Some sites (e.g. `abc.xyz`, behind a Cloudflare managed challenge) answer `403` to server-side HTTP clients. Content inspection then reports "content could not be retrieved" and only the domain match counts, so `Alphabet Inc.` + `https://abc.xyz` is rejected, with that reason in the message. We deliberately don't try to get around bot detection. [ADR 002](docs/decisions/002-relevance-strategy.md) discusses production alternatives.
 - **Uniqueness is one company per registrable domain.** `shop.acme.com` and `www.acme.com` conflict.

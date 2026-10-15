@@ -86,6 +86,7 @@ The verdict carries the best evidence and every strategy that ran. A rejection i
 - **Mostly offline and fast.** The large majority of real companies pass on the domain match without any network call. An integration test asserts that no fetch happens when the domain matches.
 - **Extensible.** A new signal is a new `IRelevanceStrategy` registration. Ordering is cost order: cheap first.
 - **Heuristic, not proof.** "Apple" ↔ `pineapplefarm.com` would pass the containment rule. The goal is catching obvious mismatches and typos, not verifying ownership.
+- **Flagged improvement: rate limiting.** Content inspection makes the API fetch a user-supplied (public) site. The SSRF guard covers *where* we may connect, not *how often*. A per-client rate limit on `POST /api/companies` (429 problem response) and a per-domain cache of fetch results are the next steps.
 - **Known limitation: bot protection.** Some sites refuse server-side clients outright. `abc.xyz` sits behind a Cloudflare managed challenge (`Cf-Mitigated: challenge`) and answers `403` to .NET's HTTP client, whatever the VPN or headers. Content inspection then reports "content could not be retrieved", and **Alphabet Inc. ↔ abc.xyz is rejected** with that reason in the message. We deliberately don't spoof browser fingerprints or solve challenges: that would mean evading the site's bot protection.
 
 ## Production alternatives

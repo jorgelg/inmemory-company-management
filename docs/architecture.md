@@ -105,8 +105,8 @@ Validation happens in layers, and each layer has its own job:
 | Suite | Scope | Count |
 |---|---|---|
 | `Companies.UnitTests` (NUnit, Shouldly, NSubstitute) | Value objects, domain parser, normalizer, Jaro-Winkler, each relevance strategy, validator ordering, ranker, service paths (with `FakeTimeProvider` / `FakeLogger`), repository incl. concurrency, IP guard, real guarded handler against loopback, HTML parser, fetcher (redirects, limits, timeout, cancellation), architecture rules | 265 |
-| `Companies.Api.IntegrationTests` (`WebApplicationFactory`) | Every endpoint and status code over HTTP, ProblemDetails shape, CORS, 500 without leaks, DI validation | 48 |
-| Frontend (Vitest, `HttpTestingController`) | Problem parsing, API client, store, form (client and server errors), search, list, page | 33 |
+| `Companies.Api.IntegrationTests` (`WebApplicationFactory`) | Every endpoint and status code over HTTP, ProblemDetails shape, CORS, 500 without leaks, DI validation, API docs only in Development | 51 |
+| Frontend (Vitest, `HttpTestingController`) | Problem parsing, API client, store, form (client and server errors, errors clearing on edit, double-submit guard), search, list, page | 35 |
 
 Assertions use Shouldly only; NUnit's `Assert` is banned by an analyzer. Key tests were checked by mutation: deliberately breaking the guarded code (a ranker weight, the duplicate check, the IP check, redirect validation, the output-name bug) made them fail.
 
@@ -136,6 +136,6 @@ Assertions use Shouldly only; NUnit's `Assert` is banned by an analyzer. Key tes
 | 7 Practices | HTTP codes; clear validation and friendly messages | Mapping in one place; human-readable `detail` everywhere |
 | | Modern C# (async/await, records, data annotations) | Records, primary constructors, collection expressions, `[GeneratedRegex]`, `FrozenSet`, `TimeProvider`, Guid v7, nullable + analyzers |
 | | Logging for key operations and errors | `[LoggerMessage]` in service, validator, fetcher, exception handler |
-| | Unit tests for business logic and API behaviour | 313 backend + 33 frontend tests |
+| | Unit tests for business logic and API behaviour | 316 backend + 35 frontend tests |
 | Running | `dotnet run` on 5000/7000; Angular dev server | `launchSettings.json` (https profile default); `npm start` with proxy |
 | Submission | Source and README with setup | This repository; [README](../README.md) |
