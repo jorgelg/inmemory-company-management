@@ -2,7 +2,7 @@
 
 A Web API (ASP.NET Core, .NET 10) and an Angular 22 frontend for registering companies. Each submission is validated, including a check that the **company name is relevant to its website URL**. Valid companies are stored in memory and can be listed, filtered, searched by relevance and fetched by id.
 
-- **Backend**: Clean Architecture (Domain / Application / Infrastructure / Api), RFC 9457 ProblemDetails, structured logging, 292 NUnit tests.
+- **Backend**: Clean Architecture (Domain / Application / Infrastructure / Api), RFC 9457 ProblemDetails, structured logging, 313 NUnit tests.
 - **Frontend**: standalone, zoneless Angular with signals, Signal Forms and `httpResource`, 33 Vitest tests.
 - **Design docs**: [architecture](docs/architecture.md) · [ADR 001 API design](docs/decisions/001-api-design.md) · [ADR 002 relevance strategy](docs/decisions/002-relevance-strategy.md) · [ADR 003 persistence](docs/decisions/003-persistence.md) · [coding conventions](CONVENTIONS.md)
 
@@ -41,7 +41,7 @@ The OpenAPI document is at http://localhost:5000/openapi/v1.json in Development.
 
 ```bash
 cd backend
-dotnet test                 # 245 unit + 47 integration tests
+dotnet test                 # 265 unit + 48 integration tests
 
 cd ../frontend
 npm run test:ci             # 33 Vitest tests (npm test = watch mode)
@@ -142,4 +142,4 @@ docs/                            architecture and decision records
 - **Storage is in memory.** Data is lost on restart, by design (the spec says no database). [ADR 003](docs/decisions/003-persistence.md) covers the path to a real database.
 - **Sites behind bot protection can't be inspected.** Some sites (e.g. `abc.xyz`, behind a Cloudflare managed challenge) answer `403` to server-side HTTP clients. Content inspection then reports "content could not be retrieved" and only the domain match counts, so `Alphabet Inc.` + `https://abc.xyz` is rejected, with that reason in the message. We deliberately don't try to get around bot detection. [ADR 002](docs/decisions/002-relevance-strategy.md) discusses production alternatives.
 - **Uniqueness is one company per registrable domain.** `shop.acme.com` and `www.acme.com` conflict.
-- **Public suffixes** come from a curated list of common two-label suffixes (`co.uk`, `com.au`, …), not the full Public Suffix List.
+- **Public suffixes** come from an embedded snapshot of the [Public Suffix List](https://publicsuffix.org) (MPL 2.0, version `2026-10-07`). New suffixes appear upstream over time. To refresh: `curl -o backend/src/Companies.Domain/Companies/public_suffix_list.dat https://publicsuffix.org/list/public_suffix_list.dat`.

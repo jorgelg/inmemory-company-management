@@ -1,3 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <ItemGroup>
+    <!-- Mozilla Public Suffix List snapshot (MPL 2.0), see Companies/PublicSuffixList.cs. -->
+    <EmbeddedResource Include="Companies\public_suffix_list.dat" LogicalName="Companies.Domain.public_suffix_list.dat" />
+  </ItemGroup>
+
 </Project>

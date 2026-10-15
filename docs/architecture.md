@@ -23,7 +23,7 @@ flowchart LR
 
 | Layer | Responsibility | Key types |
 |---|---|---|
-| Domain | Invariants that hold everywhere. An invalid company can't be constructed. | `Company` (Guid v7 id, `Create` / `Restore`), `CompanyName`, `WebsiteUrl` (canonical URL, registrable domain, label), `DomainNameParser`, `Result<T>`, `Error` |
+| Domain | Invariants that hold everywhere. An invalid company can't be constructed. | `Company` (Guid v7 id, `Create` / `Restore`), `CompanyName`, `WebsiteUrl` (canonical URL, registrable domain, label), `DomainNameParser` + `PublicSuffixList` (embedded Public Suffix List snapshot), `Result<T>`, `Error` |
 | Application | Use cases and policy: uniqueness, relevance, search, paging. Defines the ports it needs. | `ICompanyService` / `CompanyService`, `CompanyQueryParser`, `IRelevanceValidator` + `IRelevanceStrategy` (`DomainMatchStrategy`, `ContentInspectionStrategy`), `CompanySearchRanker`, `ICompanyRepository`, `IWebsiteContentFetcher`, contracts (`CreateCompanyRequest`, `CompanyResponse`, `CompanyQuery`, `PagedResponse<T>`) |
 | Infrastructure | Port implementations: storage, outbound HTTP. | `InMemoryCompanyRepository` + `internal CompanyRecord`, `HttpWebsiteContentFetcher`, `GuardedHttpHandler`, `IpAddressGuard`, `HtmlMetadataParser` |
 | Api | HTTP only: binding, status codes, error format, pipeline. | `CompaniesController`, `CompanyListParameters`, `ErrorResults`, `InvalidRequestResponseFactory`, `GlobalExceptionHandler` |
@@ -104,8 +104,8 @@ Validation happens in layers, and each layer has its own job:
 
 | Suite | Scope | Count |
 |---|---|---|
-| `Companies.UnitTests` (NUnit, Shouldly, NSubstitute) | Value objects, domain parser, normalizer, Jaro-Winkler, each relevance strategy, validator ordering, ranker, service paths (with `FakeTimeProvider` / `FakeLogger`), repository incl. concurrency, IP guard, real guarded handler against loopback, HTML parser, fetcher (redirects, limits, timeout, cancellation), architecture rules | 245 |
-| `Companies.Api.IntegrationTests` (`WebApplicationFactory`) | Every endpoint and status code over HTTP, ProblemDetails shape, CORS, 500 without leaks, DI validation | 47 |
+| `Companies.UnitTests` (NUnit, Shouldly, NSubstitute) | Value objects, domain parser, normalizer, Jaro-Winkler, each relevance strategy, validator ordering, ranker, service paths (with `FakeTimeProvider` / `FakeLogger`), repository incl. concurrency, IP guard, real guarded handler against loopback, HTML parser, fetcher (redirects, limits, timeout, cancellation), architecture rules | 265 |
+| `Companies.Api.IntegrationTests` (`WebApplicationFactory`) | Every endpoint and status code over HTTP, ProblemDetails shape, CORS, 500 without leaks, DI validation | 48 |
 | Frontend (Vitest, `HttpTestingController`) | Problem parsing, API client, store, form (client and server errors), search, list, page | 33 |
 
 Assertions use Shouldly only; NUnit's `Assert` is banned by an analyzer. Key tests were checked by mutation: deliberately breaking the guarded code (a ranker weight, the duplicate check, the IP check, redirect validation, the output-name bug) made them fail.
@@ -136,6 +136,6 @@ Assertions use Shouldly only; NUnit's `Assert` is banned by an analyzer. Key tes
 | 7 Practices | HTTP codes; clear validation and friendly messages | Mapping in one place; human-readable `detail` everywhere |
 | | Modern C# (async/await, records, data annotations) | Records, primary constructors, collection expressions, `[GeneratedRegex]`, `FrozenSet`, `TimeProvider`, Guid v7, nullable + analyzers |
 | | Logging for key operations and errors | `[LoggerMessage]` in service, validator, fetcher, exception handler |
-| | Unit tests for business logic and API behaviour | 292 backend + 33 frontend tests |
+| | Unit tests for business logic and API behaviour | 313 backend + 33 frontend tests |
 | Running | `dotnet run` on 5000/7000; Angular dev server | `launchSettings.json` (https profile default); `npm start` with proxy |
 | Submission | Source and README with setup | This repository; [README](../README.md) |

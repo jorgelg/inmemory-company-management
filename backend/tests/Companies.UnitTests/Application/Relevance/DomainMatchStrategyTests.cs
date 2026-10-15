@@ -21,6 +21,8 @@ public sealed class DomainMatchStrategyTests
     [TestCase("International Business Machines", "https://www.ibm.com")]
     [TestCase("Blue Bottle Coffee", "https://bluebottleroasters.com")]
     [TestCase("Gogle", "https://google.com")]
+    [TestCase("Google", "https://www.google.com.bo")]
+    [TestCase("Ministerio de Salud", "https://www.ministeriodesalud.gob.bo")]
     public async Task Evaluate_RelatedNameAndDomain_ScoresAtLeastThreshold(string name, string website)
     {
         var evidence = await _strategy.EvaluateAsync(Candidate(name, website), CancellationToken.None);

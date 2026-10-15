@@ -1,31 +1,15 @@
-using System.Collections.Frozen;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Companies.Domain.Companies;
 
 /// <summary>
-/// Splits a host name into its registrable domain and label. Handles single-label TLDs and a
-/// curated list of common two-label public suffixes (co.uk, com.au, …). A full Public Suffix
-/// List library can replace this without changing callers.
+/// Splits a host name into its registrable domain and label using the Public Suffix List
+/// (<see cref="PublicSuffixList"/>): <c>www.google.com.bo</c> → <c>google.com.bo</c> / <c>google</c>,
+/// <c>acme.github.io</c> → <c>acme.github.io</c> / <c>acme</c>. A host that is itself a public
+/// suffix (<c>com.bo</c>, <c>co.uk</c>, <c>github.io</c>) has no registrable domain.
 /// </summary>
 public static class DomainNameParser
 {
-    private static readonly FrozenSet<string> MultiLabelSuffixes = new[]
-    {
-        "co.uk", "org.uk", "me.uk", "ac.uk", "gov.uk", "ltd.uk", "plc.uk",
-        "com.au", "net.au", "org.au", "edu.au", "gov.au",
-        "co.nz", "org.nz", "net.nz",
-        "co.jp", "ne.jp", "or.jp",
-        "co.kr", "or.kr",
-        "co.in", "net.in", "org.in",
-        "co.za", "org.za",
-        "co.il", "org.il",
-        "com.br", "net.br", "org.br",
-        "com.mx", "com.ar", "com.co", "com.pe", "com.uy", "com.ve",
-        "com.cn", "net.cn", "org.cn", "com.hk", "com.tw", "com.sg", "com.my", "com.ph",
-        "com.tr", "com.eg", "com.sa",
-    }.ToFrozenSet(StringComparer.Ordinal);
-
     public static bool TryParse(string? host, [NotNullWhen(true)] out DomainParts? parts)
     {
         parts = null;
@@ -43,7 +27,7 @@ public static class DomainNameParser
             return false;
         }
 
-        var suffixLabelCount = MultiLabelSuffixes.Contains($"{labels[^2]}.{labels[^1]}") ? 2 : 1;
+        var suffixLabelCount = PublicSuffixList.SuffixLabelCount(labels);
 
         if (labels.Length <= suffixLabelCount)
         {

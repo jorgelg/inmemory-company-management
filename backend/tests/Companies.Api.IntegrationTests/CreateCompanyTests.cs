@@ -150,6 +150,21 @@ public sealed class CreateCompanyTests
         problem.FieldErrors("website").ShouldNotBeEmpty();
     }
 
+    [Test]
+    public async Task Post_DifferentCompaniesUnderSameCountrySecondLevel_AreNotDuplicates()
+    {
+        using var google = await Post(new { name = "Google", website = "https://www.google.com.bo" });
+        using var tigo = await Post(new { name = "Tigo", website = "https://www.tigo.com.bo" });
+
+        (await google.ShouldHaveJsonBody<CompanyResponse>(HttpStatusCode.Created)).Domain.ShouldBe("google.com.bo");
+        (await tigo.ShouldHaveJsonBody<CompanyResponse>(HttpStatusCode.Created)).Domain.ShouldBe("tigo.com.bo");
+        await _factory.ContentFetcher.DidNotReceiveWithAnyArgs().FetchAsync(default!, default);
+
+        using var filtered = await _client.GetAsync(new Uri("/api/companies?domain=google.com.bo", UriKind.Relative));
+        var page = await filtered.ShouldHaveJsonBody<PagedResponse<CompanyResponse>>(HttpStatusCode.OK);
+        page.Items.Select(i => i.Name).ShouldBe(["Google"]);
+    }
+
     [TestCase("{ not json")]
     [TestCase("")]
     [TestCase("[]")]

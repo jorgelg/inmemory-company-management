@@ -29,6 +29,23 @@ public sealed class WebsiteUrlTests
             () => url.DomainLabel.ShouldBe("acme"));
     }
 
+    [TestCase("https://www.google.com.bo", "google.com.bo", "google")]
+    [TestCase("https://ministerio.gob.bo/tramites", "ministerio.gob.bo", "ministerio")]
+    public void Create_CountryCodeSecondLevel_UsesPublicSuffixList(string input, string registrable, string label)
+    {
+        var url = WebsiteUrl.Create(input).ShouldBeSuccess();
+
+        url.ShouldSatisfyAllConditions(
+            () => url.RegistrableDomain.ShouldBe(registrable),
+            () => url.DomainLabel.ShouldBe(label));
+    }
+
+    [Test]
+    public void Create_HostThatIsAPublicSuffix_Fails()
+    {
+        WebsiteUrl.Create("https://com.bo").ShouldBeValidationError("website.invalid_host", "website");
+    }
+
     [TestCase("https://www.müller.de")]
     [TestCase("https://www.MÜLLER.de")]
     [TestCase("https://www.xn--mller-kva.de")]

@@ -26,7 +26,17 @@ A **pipeline of strategies** behind `IRelevanceStrategy`, run in order by `Relev
 
 ### 1. Normalization (shared)
 
-`WebsiteUrl` canonicalizes the URL: lowercase scheme and host, **Unicode host** (so the IDN and punycode spellings compare equal), no default port, root slash or fragment. It also extracts the **registrable domain** and its **label**: `www.shop.acme.co.uk` → `acme.co.uk` → `acme`. A curated list covers common two-label suffixes (`co.uk`, `com.au`, …).
+`WebsiteUrl` canonicalizes the URL: lowercase scheme and host, **Unicode host** (so the IDN and punycode spellings compare equal), no default port, root slash or fragment. It also extracts the **registrable domain** and its **label**: `www.shop.acme.co.uk` → `acme.co.uk` → `acme`; `www.google.com.bo` → `google.com.bo` → `google`.
+
+That split uses the **Mozilla Public Suffix List**, embedded as a snapshot in the Domain project (`Companies/public_suffix_list.dat`, version in its `// VERSION:` header):
+- It includes the ICANN and private sections, so `acme.github.io` is its own registrable domain.
+- It supports wildcard (`*.ck`) and exception (`!www.ck`) rules.
+- An unknown TLD falls back to the default rule.
+- A host that is itself a public suffix (`com.bo`, `github.io`) is rejected.
+
+The registrable domain feeds the relevance label, uniqueness (409) and the `domain` filter, so it must be right.
+- *History:* the first version used a curated list of ~45 two-label suffixes. Testing `https://google.com.bo` exposed it: `com.bo` wasn't listed, so the domain became `com.bo`, and every other `*.com.bo` company would have been rejected as a duplicate. The full list replaced the curated one, with regression tests for `com.bo` / `gob.bo` / `com.ec` / `co.ke` and an integration test proving `google.com.bo` and `tigo.com.bo` can both be registered.
+- *Refresh:* `curl -o backend/src/Companies.Domain/Companies/public_suffix_list.dat https://publicsuffix.org/list/public_suffix_list.dat`, then run the tests.
 
 `CompanyNameNormalizer` folds the name:
 - lowercase, strip diacritics and apostrophes;
