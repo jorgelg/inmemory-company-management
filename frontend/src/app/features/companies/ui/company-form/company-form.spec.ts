@@ -127,6 +127,43 @@ describe('CompanyForm', () => {
     expect(text('form-error')).toBe('');
   });
 
+  it('clears a server error on a field once that field is edited, not when another field is', async () => {
+    await type('company-name', 'Verus');
+    await type('company-website', 'https://shop.verus.com');
+    await submit();
+    postRequest().flush(
+      {
+        title: 'The resource already exists.',
+        detail: "A company with website domain 'verus.com' already exists.",
+        code: 'company.duplicate_website',
+        errors: { website: ["A company with website domain 'verus.com' already exists."] },
+      },
+      { status: 409, statusText: 'Conflict' },
+    );
+    await settle();
+
+    await type('company-name', 'Verus Capital');
+    expect(text('website-errors')).toContain('already exists');
+
+    await type('company-website', 'https://www.veruscapital.com');
+    expect(text('website-errors')).toBe('');
+  });
+
+  it('ignores a second submit while the first is still saving', async () => {
+    await type('company-name', 'Verus LLC');
+    await type('company-website', 'https://www.verus.com');
+
+    await submit();
+    expect(element.querySelector<HTMLButtonElement>('button[type="submit"]')!.disabled).toBe(true);
+    await submit();
+
+    const requests = http.match({ method: 'POST', url: '/api/companies' });
+    expect(requests).toHaveLength(1);
+    requests[0].flush(makeCompany(), { status: 201, statusText: 'Created' });
+    await settle();
+    expect(text('form-success')).toBe('Added Verus LLC (verus.com).');
+  });
+
   it('explains when the API cannot be reached', async () => {
     await type('company-name', 'Verus LLC');
     await type('company-website', 'https://www.verus.com');
