@@ -3,6 +3,7 @@ using Companies.Api.Http;
 using Companies.Application;
 using Companies.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,7 +22,14 @@ builder.Services
 
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options => options.AddDocumentTransformer((document, _, _) =>
+{
+    document.Info.Title = "Companies API";
+    document.Info.Description =
+        "Register companies (name + website, validated for relevance), then list, filter, search and fetch them. "
+        + "Errors are RFC 9457 problem details with a machine-readable `code`.";
+    return Task.CompletedTask;
+}));
 
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
 builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy
@@ -37,7 +45,9 @@ app.UseStatusCodePages();
 
 if (app.Environment.IsDevelopment())
 {
+    // API description (/openapi/v1.json) and an interactive reference over it (/scalar/v1).
     app.MapOpenApi();
+    app.MapScalarApiReference(options => options.WithTitle("Companies API"));
 }
 else
 {

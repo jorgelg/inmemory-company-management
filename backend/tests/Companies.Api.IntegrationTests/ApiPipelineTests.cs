@@ -2,6 +2,7 @@ using System.Net;
 using Companies.Api.IntegrationTests.Support;
 using Companies.Application.Companies;
 using Companies.Application.Companies.Contracts;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 
@@ -20,7 +21,37 @@ public sealed class ApiPipelineTests
         using var response = await client.GetAsync(new Uri("/openapi/v1.json", UriKind.Relative));
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        (await response.Content.ReadAsStringAsync()).ShouldContain("/api/companies");
+        var document = await response.Content.ReadAsStringAsync();
+        document.ShouldSatisfyAllConditions(
+            d => d.ShouldContain("/api/companies"),
+            d => d.ShouldContain("\"title\": \"Companies API\""));
+    }
+
+    [Test]
+    public async Task ScalarApiReference_IsServed_InDevelopment()
+    {
+        await using var factory = new CompaniesApiFactory();
+        using var client = factory.CreateClient();
+
+        using var response = await client.GetAsync(new Uri("/scalar/v1", UriKind.Relative));
+
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        response.Content.Headers.ContentType?.MediaType.ShouldBe("text/html");
+        // The page loads the document relative to the site root.
+        (await response.Content.ReadAsStringAsync()).ShouldContain("\"url\":\"openapi/v1.json\"");
+    }
+
+    [TestCase("/scalar/v1")]
+    [TestCase("/openapi/v1.json")]
+    public async Task ApiDocumentation_IsNotServed_OutsideDevelopment(string path)
+    {
+        await using var factory = new CompaniesApiFactory();
+        await using var production = factory.WithWebHostBuilder(builder => builder.UseEnvironment("Production"));
+        using var client = production.CreateClient();
+
+        using var response = await client.GetAsync(new Uri(path, UriKind.Relative));
+
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
     [Test]
